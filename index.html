@@ -497,7 +497,8 @@ const COLUNAS = {
     {k:'nm_mun',     r:'Município'},
     {k:'ciclo',      r:'Ciclo',      fixo:true, ph:'ex: 10', d:'Igual para toda a carga.'},
     {k:'ano',        r:'Ano',        fixo:true, t:'int', ph:'ex: 2026', d:'Igual para toda a carga.'},
-    {k:'despacho',   r:'Despacho',   fixo:true, ph:'número do despacho', d:'Igual para toda a carga.'}
+    {k:'despacho',   r:'Despacho',   lista:['DENÚNCIA','EMBARGO REMOTO','NOTIFICAÇÃO','OUTRO'],
+                     d:'Escolha um valor padronizado da lista.'}
   ],
   areas_degradadas: [
     {k:'fonte',       r:'Fonte',      lista:['DETER','BRMAIS','MAPBIOMAS','SEMARH','OUTRA'],
