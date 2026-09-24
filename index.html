@@ -291,7 +291,7 @@ td.mot{color:var(--tinta-fraca);font-size:12.5px}
 
   <details>
     <summary>Não consigo entrar</summary>
-    <p>As contas são criadas pelo administrador do SGBD. &rarr; Entre em contato para verificar e atualizar as credenciais de acesso.</p>
+    <p>As contas são criadas pelo administrador no painel do Supabase, em Authentication &rarr; Users. O cadastro aberto fica desligado de propósito.</p>
   </details>
 
   <footer class="creditos">
@@ -512,7 +512,7 @@ const COLUNAS = {
     {k:'cadastrant',  r:'Cadastrante', lista:['ALLAN','EMÍLIO','HÉRCULES','MARCO'],
                       d:'Quem está cadastrando esta carga.'},
     {k:'processo',    r:'Processo'},
-    {k:'code_fonte',  r:'Código de origem', d:'Opcional. O código de origem deve corresponder ao valor atribuído ao campo "code_fonte" nas tabelas alertas_desmatamento ou frentes_fogo, que estão relacionadas à feição a ser importada.'}
+    {k:'code_fonte',  r:'Código de origem', d:'O código de origem deve corresponder ao valor atribuído ao campo "code_fonte" nas tabelas alertas_desmatamento ou frentes_fogo, que estão relacionadas à feição a ser importada.'}
   ],
   frentes_fogo: [
     {k:'code_fonte', r:'Código da frente de fogo', obr:true, d:'Chave única. Sem ela a feição é barrada.'},
@@ -1289,15 +1289,28 @@ $('#btnGravar').addEventListener('click', async ()=>{
     const codes=(data.codes||[]).slice(0,12).join(', ');
     const resto=(data.codes||[]).length>12 ? ` e mais ${data.codes.length-12}` : '';
     const el=$('#resultado');
-    el.className='nota bom';
-    el.innerHTML = `<strong>${data.gravados} feições gravadas.</strong>`
-      + (data.ignorados?` ${data.ignorados} já estavam no banco e foram puladas.`:'')
-      + (data.barrados?` ${data.barrados} ficaram de fora.`:'')
-      + (codes?`<br><span style="font-family:var(--mono);font-size:12.5px">${codes}${resto}</span>`:'')
-      + `<br><br>Atualize a camada no QGIS para ver os registros novos.`;
+    // Gravar zero nao e sucesso: a chamada funcionou, mas nada entrou no
+    // banco. Sem essa distincao a tela dizia "Gravado" e mandava atualizar
+    // a camada no QGIS mesmo sem nenhum registro novo.
+    const nada = !data.gravados;
+    el.className = nada ? 'nota ruim' : 'nota bom';
+    el.innerHTML = nada
+      ? `<strong>Nenhuma feição foi gravada.</strong>`
+        + (data.ignorados?` ${data.ignorados} já estavam no banco e foram puladas.`:'')
+        + (data.barrados?` ${data.barrados} foram barradas pelas regras da tabela.`:'')
+        + `<br><br>Volte para a conferência para ver o motivo de cada feição.`
+      : `<strong>${data.gravados} feições gravadas.</strong>`
+        + (data.ignorados?` ${data.ignorados} já estavam no banco e foram puladas.`:'')
+        + (data.barrados?` ${data.barrados} ficaram de fora.`:'')
+        + (codes?`<br><span style=\"font-family:var(--mono);font-size:12.5px\">${codes}${resto}</span>`:'')
+        + `<br><br>Atualize a camada no QGIS para ver os registros novos.`;
     el.classList.remove('oculto');
-    concluir(4);
-    $('#btnGravar').textContent='Gravado';
+    if(nada){
+      $('#btnGravar').disabled=false;     // permite tentar de novo apos corrigir
+    } else {
+      concluir(4);
+      $('#btnGravar').textContent='Gravado';
+    }
   }catch(err){
     const el=$('#resultado');
     el.className='nota ruim';
